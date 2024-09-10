@@ -12,12 +12,14 @@ from skopt import BayesSearchCV  # For Bayesian Optimization
 from sklearn.experimental import enable_halving_search_cv  # To enable HalvingGridSearchCV/Hyperband
 from sklearn.model_selection import HalvingGridSearchCV, HalvingRandomSearchCV  # Hyperband
 
+
 # Load preprocessed data
 def load_preprocessed_data(filepath, allow_pickle=True):
     data = np.load(filepath, allow_pickle=allow_pickle)
     columns = [f'feature_{i}' for i in range(data.shape[1] - 1)] + ['label']
     features_df = pd.DataFrame(data, columns=columns)
     return features_df
+
 
 # Print evaluation metrics and confusion matrix
 def print_evaluation_metrics(y_test, y_pred, model_name):
@@ -30,6 +32,7 @@ def print_evaluation_metrics(y_test, y_pred, model_name):
     plt.xlabel("Predicted")
     plt.ylabel("True")
     plt.show()
+
 
 # Plot learning curve to check for overfitting/underfitting
 def plot_learning_curve(model, X, y, cv=5):
@@ -52,17 +55,20 @@ def plot_learning_curve(model, X, y, cv=5):
     plt.tight_layout()
     plt.show()
 
+
 # Evaluate model with cross-validation
 def evaluate_model_with_cross_validation(rf_model, X_train, y_train):
     cv_scores = cross_val_score(rf_model, X_train, y_train, cv=5, scoring='accuracy')
     print(f"Cross-Validation Accuracy Scores: {cv_scores}")
     print(f"Mean Cross-Validation Accuracy: {np.mean(cv_scores)}")
 
+
 # Apply SMOTE for handling class imbalance
 def apply_smote(X_train, y_train):
     smote = SMOTE(random_state=42)
     X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
     return X_resampled, y_resampled
+
 
 # Recursive feature elimination (RFE)
 def recursive_feature_elimination(X_train, y_train):
@@ -71,6 +77,7 @@ def recursive_feature_elimination(X_train, y_train):
     selector = selector.fit(X_train, y_train)
     print(f"Selected Features: {selector.support_}")
     return selector
+
 
 # Hyperparameter tuning with Grid Search
 def tune_random_forest_with_grid_search(X_train, y_train):
@@ -89,6 +96,7 @@ def tune_random_forest_with_grid_search(X_train, y_train):
     grid_search.fit(X_train, y_train)
     print(f"Best parameters (Grid Search): {grid_search.best_params_}")
     return grid_search.best_estimator_
+
 
 # Hyperparameter tuning with Randomized Search
 def tune_random_forest_with_random_search(X_train, y_train, n_iter=50):
@@ -110,6 +118,7 @@ def tune_random_forest_with_random_search(X_train, y_train, n_iter=50):
     print(f"Best parameters (Randomized Search): {random_search.best_params_}")
     return random_search.best_estimator_
 
+
 # Hyperparameter tuning with Bayesian Optimization (using skopt)
 def tune_random_forest_with_bayesian_optimization(X_train, y_train):
     rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
@@ -121,16 +130,18 @@ def tune_random_forest_with_bayesian_optimization(X_train, y_train):
         'bootstrap': [True, False],
         'criterion': ['gini', 'entropy']
     }
-    bayes_search = BayesSearchCV(estimator=rf_model, search_spaces=param_dist, n_iter=32, cv=5, n_jobs=-1, random_state=42)
+    bayes_search = BayesSearchCV(estimator=rf_model, search_spaces=param_dist, n_iter=32, cv=5, n_jobs=-1,
+                                 random_state=42)
     bayes_search.fit(X_train, y_train)
     print(f"Best parameters (Bayesian Optimization): {bayes_search.best_params_}")
     return bayes_search.best_estimator_
+
 
 # Hyperparameter tuning with Hyperband (using HalvingGridSearchCV and HalvingRandomSearchCV)
 def tune_random_forest_with_hyperband(X_train, y_train, search_type="grid"):
     rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
 
-   # Updated parameter grid to reduce overfitting
+    # Updated parameter grid to reduce overfitting
     param_grid = {
         'n_estimators': [100, 200, 300],  # Reduce the number of trees
         'max_depth': [10, 15, 20],  # Reduce tree depth to prevent overfitting
@@ -142,13 +153,16 @@ def tune_random_forest_with_hyperband(X_train, y_train, search_type="grid"):
     }
 
     if search_type == "grid":
-        hyperband_search = HalvingGridSearchCV(estimator=rf_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2, scoring='accuracy')
+        hyperband_search = HalvingGridSearchCV(estimator=rf_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2,
+                                               scoring='accuracy')
     else:
-        hyperband_search = HalvingRandomSearchCV(estimator=rf_model, param_distributions=param_grid, n_jobs=-1, verbose=2, scoring='accuracy')
+        hyperband_search = HalvingRandomSearchCV(estimator=rf_model, param_distributions=param_grid, n_jobs=-1,
+                                                 verbose=2, scoring='accuracy')
 
     hyperband_search.fit(X_train, y_train)
     print(f"Best parameters (Hyperband - {search_type.capitalize()} Search): {hyperband_search.best_params_}")
     return hyperband_search.best_estimator_
+
 
 # Check for overfitting or underfitting
 def check_overfitting_underfitting(rf_model, X_train, X_test, y_train, y_test):
@@ -162,6 +176,7 @@ def check_overfitting_underfitting(rf_model, X_train, X_test, y_train, y_test):
         print("The model might be underfitting.")
     else:
         print("The model is well-fitted.")
+
 
 # Train and evaluate Random Forest with different hyperparameter tuning methods
 def train_and_evaluate_rf(filepath, search_method="grid", n_iter=50, search_type="grid"):
@@ -203,16 +218,21 @@ def train_and_evaluate_rf(filepath, search_method="grid", n_iter=50, search_type
     # Perform cross-validation
     evaluate_model_with_cross_validation(rf_model, X_train, y_train)
 
+
 # Example usage of Random Forest with Grid Search
 train_and_evaluate_rf('/kaggle/input/individual-project-preprocessed-data/preprocessed_data.npy', search_method="grid")
 
 # Example usage of Random Forest with Randomized Search
-train_and_evaluate_rf('/kaggle/input/individual-project-preprocessed-data/preprocessed_data.npy', search_method="random", n_iter=50)
+train_and_evaluate_rf('/kaggle/input/individual-project-preprocessed-data/preprocessed_data.npy',
+                      search_method="random", n_iter=50)
 
 # Example usage of Random Forest with Bayesian Optimization
-train_and_evaluate_rf('/kaggle/input/individual-project-preprocessed-data/preprocessed_data.npy', search_method="bayesian")
+train_and_evaluate_rf('/kaggle/input/individual-project-preprocessed-data/preprocessed_data.npy',
+                      search_method="bayesian")
 
 # Example usage of Random Forest with Hyperband
-train_and_evaluate_rf('/kaggle/input/individual-project-preprocessed-data/preprocessed_data.npy', search_method="hyperband", search_type="grid")
+train_and_evaluate_rf('/kaggle/input/individual-project-preprocessed-data/preprocessed_data.npy',
+                      search_method="hyperband", search_type="grid")
 
-train_and_evaluate_rf('/kaggle/input/individual-project-preprocessed-data/preprocessed_data.npy', search_method="hyperband")
+train_and_evaluate_rf('/kaggle/input/individual-project-preprocessed-data/preprocessed_data.npy',
+                      search_method="hyperband")

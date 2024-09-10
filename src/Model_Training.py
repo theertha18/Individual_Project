@@ -11,7 +11,6 @@ import seaborn as sns
 import joblib
 
 
-
 def load_preprocessed_data(filepath, allow_pickle=True):
     """
     Loads preprocessed data from a .npy file and converts it into a pandas DataFrame.
@@ -176,7 +175,6 @@ def train_and_evaluate_models(filepath, save_models=True, save_dir='../Models/')
     # Print all model scores for comparison
     print("Model Scores:")
     print(model_scores)
-
 
 
 # Call the function to train and evaluate models

@@ -1,4 +1,3 @@
-
 import pandas as pd
 
 import os
@@ -15,4 +14,3 @@ df.to_csv(output_file_path, index=False)
 
 # Set permissions for the file
 os.chmod(output_file_path, 0o644)  # This sets the file permissions to 644 (read/write for owner, read for others)
-
