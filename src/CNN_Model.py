@@ -13,6 +13,22 @@ import joblib  # For saving models
 
 # Custom Keras wrapper to work like KerasClassifier
 class KerasClassifier(BaseEstimator, ClassifierMixin):
+    """
+    Custom wrapper for Keras models to work like KerasClassifier for easier integration with scikit-learn functions.
+
+    Parameters:
+    - build_fn: function to build the Keras model.
+    - epochs: int, number of epochs to train the model.
+    - batch_size: int, batch size for training.
+    - verbose: int, verbosity level for model training.
+    - fit_args: additional arguments for fitting the model.
+
+    Methods:
+    - fit: Fits the model to the training data.
+    - predict: Makes predictions using the trained model.
+    - score: Evaluates the model accuracy on given data.
+    """
+
     def __init__(self, build_fn, epochs=10, batch_size=32, verbose=0, **fit_args):
         self.build_fn = build_fn
         self.epochs = epochs
@@ -35,6 +51,16 @@ class KerasClassifier(BaseEstimator, ClassifierMixin):
 
 # Function to load preprocessed data
 def load_preprocessed_data(filepath, allow_pickle=True):
+    """
+    Loads preprocessed data from a .npy file and converts it to a pandas DataFrame.
+
+    Parameters:
+    - filepath: str, path to the .npy file containing the preprocessed data.
+    - allow_pickle: bool, whether to allow pickled object arrays (default=True).
+
+    Returns:
+    - pandas DataFrame containing features and labels.
+    """
     data = np.load(filepath, allow_pickle=allow_pickle)
     columns = [f'feature_{i}' for i in range(data.shape[1] - 1)] + ['label']
     features_df = pd.DataFrame(data, columns=columns)
@@ -43,33 +69,40 @@ def load_preprocessed_data(filepath, allow_pickle=True):
 
 # Hypermodel function for Keras Tuner
 def build_model(hp):
+    """
+    Builds a Sequential Keras model with hyperparameters dynamically set by Keras Tuner.
+
+    Parameters:
+    - hp: keras_tuner.HyperParameters object, used to define the hyperparameters for the model.
+
+    Returns:
+    - model: a compiled Keras model.
+    """
     model = Sequential()
+    input_length = X_train.shape[1]  # Input sequence length
+    max_kernel_size = min(input_length, 5)  # Restrict kernel size based on input length
 
-    # Define input shape for the Input layer
-    input_length = X_train.shape[1]  # This is the input sequence length
-    max_kernel_size = min(input_length, 5)  # Kernel size should not exceed input length
+    model.add(Input(shape=(input_length, 1)))  # Define input shape for Conv1D
 
-    model.add(Input(shape=(input_length, 1)))  # Define the input shape
-
-    # Add Conv1D layer with dynamic kernel size
+    # Conv1D layer with dynamically set hyperparameters
     model.add(Conv1D(
         filters=hp.Choice('filters', values=[32, 64, 128]),
-        kernel_size=hp.Choice('kernel_size', values=[2, 3, 4, max_kernel_size]),  # Restrict to valid kernel sizes
+        kernel_size=hp.Choice('kernel_size', values=[2, 3, 4, max_kernel_size]),
         activation=hp.Choice('activation', values=['relu', 'tanh']),
-        padding='same'  # Use padding to handle cases where kernel size equals input length
+        padding='same'
     ))
 
-    # Add MaxPooling layer
+    # MaxPooling layer
     model.add(MaxPooling1D(pool_size=hp.Choice('pool_size', values=[2, 3])))
 
-    # Add Flatten and Dense layers
+    # Dense layers
     model.add(Flatten())
     model.add(Dense(
         units=hp.Choice('dense_units', values=[64, 128, 256]),
         activation=hp.Choice('activation', values=['relu', 'tanh']))
     )
 
-    # Output layer
+    # Output layer for multi-class classification
     model.add(Dense(len(np.unique(y_train)), activation='softmax'))
 
     # Compile the model
@@ -85,7 +118,15 @@ def build_model(hp):
 # Function to print evaluation metrics and plot confusion matrix
 def print_evaluation_metrics(y_test, y_pred, model_name):
     """
-    Prints the classification report and confusion matrix for a given model's predictions.
+    Prints the classification report and confusion matrix for a model's predictions.
+
+    Parameters:
+    - y_test: array-like, true labels.
+    - y_pred: array-like, predicted labels by the model.
+    - model_name: str, name of the model being evaluated.
+
+    Returns:
+    - None, but prints metrics and displays confusion matrix heatmap.
     """
     print(f"Classification Report for {model_name}:")
     print(classification_report(y_test, y_pred))
@@ -102,6 +143,16 @@ def print_evaluation_metrics(y_test, y_pred, model_name):
 
 # Load and prepare data
 def prepare_data(filepath):
+    """
+    Loads, encodes, and splits data into training and test sets, followed by scaling.
+
+    Parameters:
+    - filepath: str, path to the preprocessed data file (.npy format).
+
+    Returns:
+    - X_train, X_test: numpy arrays, scaled feature matrices for training and test sets.
+    - y_train, y_test: numpy arrays, labels for training and test sets.
+    """
     features_df = load_preprocessed_data(filepath)
 
     X = features_df.drop(columns=['label'])  # Feature matrix
@@ -111,7 +162,7 @@ def prepare_data(filepath):
     label_encoder = LabelEncoder()
     y = label_encoder.fit_transform(y)
 
-    # Split data
+    # Split data into training and test sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
     # Scale features
@@ -128,9 +179,20 @@ def prepare_data(filepath):
 
 # Plot learning curves
 def plot_learning_curves(estimator, X_train, y_train):
+    """
+    Plots learning curves showing the training and validation accuracy as the training size increases.
+
+    Parameters:
+    - estimator: sklearn-compatible estimator, model to evaluate.
+    - X_train: array-like, training feature set.
+    - y_train: array-like, training label set.
+
+    Returns:
+    - None, but displays the learning curves plot.
+    """
     train_sizes, train_scores, test_scores = learning_curve(estimator, X_train, y_train, cv=5, scoring='accuracy',
-                                                            n_jobs=-1,
-                                                            train_sizes=np.linspace(0.1, 1.0, 5), random_state=42)
+                                                            n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 5),
+                                                            random_state=42)
 
     train_scores_mean = np.mean(train_scores, axis=1)
     test_scores_mean = np.mean(test_scores, axis=1)
@@ -148,8 +210,19 @@ def plot_learning_curves(estimator, X_train, y_train):
 
 # Check for overfitting or underfitting
 def check_overfitting_underfitting(model, X_train, X_test, y_train, y_test):
-    train_accuracy = model.evaluate(X_train, y_train, verbose=0)[1]  # Get accuracy on training data
-    test_accuracy = model.evaluate(X_test, y_test, verbose=0)[1]  # Get accuracy on test data
+    """
+    Checks for overfitting or underfitting by comparing training and test accuracy.
+
+    Parameters:
+    - model: trained Keras model.
+    - X_train, X_test: numpy arrays, feature matrices for training and test sets.
+    - y_train, y_test: numpy arrays, labels for training and test sets.
+
+    Returns:
+    - None, but prints whether the model is overfitting, underfitting, or well-fitted.
+    """
+    train_accuracy = model.evaluate(X_train, y_train, verbose=0)[1]  # Training accuracy
+    test_accuracy = model.evaluate(X_test, y_test, verbose=0)[1]  # Testing accuracy
 
     print(f"Training Accuracy: {train_accuracy:.4f}")
     print(f"Testing Accuracy: {test_accuracy:.4f}")
@@ -164,6 +237,16 @@ def check_overfitting_underfitting(model, X_train, X_test, y_train, y_test):
 
 # Hyperparameter tuning using Keras Tuner
 def perform_hyperparameter_search(X_train, X_test, y_train, y_test):
+    """
+    Performs hyperparameter tuning using Keras Tuner's RandomSearch and trains the best model.
+
+    Parameters:
+    - X_train, X_test: numpy arrays, feature matrices for training and test sets.
+    - y_train, y_test: numpy arrays, labels for training and test sets.
+
+    Returns:
+    - best_model: the Keras model with the best hyperparameters.
+    """
     tuner = kt.RandomSearch(
         build_model,
         objective='val_accuracy',
