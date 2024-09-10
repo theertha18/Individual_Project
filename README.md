@@ -23,7 +23,7 @@ Install the required packages:
 
 - **[CNN_Model.py](src%2FCNN_Model.py)**:  Trains a 1D CNN on ultrasonic signals with hyperparameter tuning using Keras Tuner.
 
-- **[Create_Test_CSV.py](src%2FCreate_Test_CSV.py)**: Merges multiple CSV files into one, facilitating data consolidation.
+- **[Create_Test_CSV.py](src%2FCreate_Test_CSV.py)**: Creates a test CSV from the existing dataset.
 
 - **[Data_Preprocessing.py](src%2FData_Preprocessing.py)**: Prepares data by reading CSV files, applying windowing, extracting features (SINAD, peaks, autocorrelation), and saving them as a .npy file.
 
