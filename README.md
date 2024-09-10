@@ -3,7 +3,9 @@
 
 
 ## Overview
-This project focuses on classifying ultrasonic signals using various machine learning and deep learning models. The aim is to preprocess raw sensor data, perform feature extraction, and build classification models to analyze the data. The core task involves the use of hyperparameter tuning for different models to optimize performance, particularly in detecting objects or features within ultrasonic signals. The project includes the development of a Flask-based web interface to facilitate the uploading of signal data and the visualization of prediction results.## Installation
+This project focuses on classifying ultrasonic signals using various machine learning and deep learning models. The aim is to preprocess raw sensor data, perform feature extraction, and build classification models to analyze the data. The core task involves the use of hyperparameter tuning for different models to optimize performance, particularly in detecting objects or features within ultrasonic signals. The project includes the development of a Flask-based web interface to facilitate the uploading of signal data and the visualization of prediction results.
+
+## Installation
 
  **Clone the repository:**
 ```bash
