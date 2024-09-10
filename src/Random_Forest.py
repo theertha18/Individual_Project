@@ -15,6 +15,16 @@ from sklearn.model_selection import HalvingGridSearchCV, HalvingRandomSearchCV  
 
 # Load preprocessed data
 def load_preprocessed_data(filepath, allow_pickle=True):
+    """
+    Loads preprocessed data from a .npy file and converts it to a pandas DataFrame.
+
+    Parameters:
+    - filepath: str, path to the .npy file containing the preprocessed data.
+    - allow_pickle: bool, optional (default=True), whether to allow loading pickled object arrays.
+
+    Returns:
+    - pandas DataFrame containing features and labels.
+    """
     data = np.load(filepath, allow_pickle=allow_pickle)
     columns = [f'feature_{i}' for i in range(data.shape[1] - 1)] + ['label']
     features_df = pd.DataFrame(data, columns=columns)
@@ -23,6 +33,17 @@ def load_preprocessed_data(filepath, allow_pickle=True):
 
 # Print evaluation metrics and confusion matrix
 def print_evaluation_metrics(y_test, y_pred, model_name):
+    """
+    Prints the classification report and confusion matrix for a given model.
+
+    Parameters:
+    - y_test: array-like, true labels.
+    - y_pred: array-like, predicted labels by the model.
+    - model_name: str, the name of the model being evaluated.
+
+    Returns:
+    - None, but prints metrics and displays confusion matrix heatmap.
+    """
     print(f"Classification Report for {model_name}:")
     print(classification_report(y_test, y_pred))
     print(f"Confusion Matrix for {model_name}:")
@@ -36,6 +57,18 @@ def print_evaluation_metrics(y_test, y_pred, model_name):
 
 # Plot learning curve to check for overfitting/underfitting
 def plot_learning_curve(model, X, y, cv=5):
+    """
+    Plots learning curves showing the training and cross-validation accuracy over different training set sizes.
+
+    Parameters:
+    - model: sklearn estimator, the model to evaluate.
+    - X: array-like, feature set.
+    - y: array-like, label set.
+    - cv: int, number of cross-validation folds (default=5).
+
+    Returns:
+    - None, but displays the learning curve plot.
+    """
     train_sizes, train_scores, test_scores = learning_curve(model, X, y, cv=cv, n_jobs=-1,
                                                             train_sizes=np.linspace(0.1, 1.0, 5), random_state=42)
     train_mean = np.mean(train_scores, axis=1)
@@ -58,6 +91,17 @@ def plot_learning_curve(model, X, y, cv=5):
 
 # Evaluate model with cross-validation
 def evaluate_model_with_cross_validation(rf_model, X_train, y_train):
+    """
+    Evaluates a Random Forest model using cross-validation.
+
+    Parameters:
+    - rf_model: sklearn estimator, the trained Random Forest model.
+    - X_train: array-like, training feature set.
+    - y_train: array-like, training label set.
+
+    Returns:
+    - None, but prints the cross-validation scores and their mean.
+    """
     cv_scores = cross_val_score(rf_model, X_train, y_train, cv=5, scoring='accuracy')
     print(f"Cross-Validation Accuracy Scores: {cv_scores}")
     print(f"Mean Cross-Validation Accuracy: {np.mean(cv_scores)}")
@@ -65,6 +109,17 @@ def evaluate_model_with_cross_validation(rf_model, X_train, y_train):
 
 # Apply SMOTE for handling class imbalance
 def apply_smote(X_train, y_train):
+    """
+    Applies SMOTE (Synthetic Minority Over-sampling Technique) to the training data to handle class imbalance.
+
+    Parameters:
+    - X_train: array-like, training feature set.
+    - y_train: array-like, training label set.
+
+    Returns:
+    - X_resampled: array-like, SMOTE-applied resampled training features.
+    - y_resampled: array-like, SMOTE-applied resampled training labels.
+    """
     smote = SMOTE(random_state=42)
     X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
     return X_resampled, y_resampled
@@ -72,6 +127,16 @@ def apply_smote(X_train, y_train):
 
 # Recursive feature elimination (RFE)
 def recursive_feature_elimination(X_train, y_train):
+    """
+    Performs Recursive Feature Elimination (RFE) to select the most important features.
+
+    Parameters:
+    - X_train: array-like, training feature set.
+    - y_train: array-like, training label set.
+
+    Returns:
+    - selector: sklearn RFE model after fitting.
+    """
     rf_model = RandomForestClassifier(random_state=42)
     selector = RFE(rf_model, n_features_to_select=10, step=1)
     selector = selector.fit(X_train, y_train)
@@ -81,6 +146,16 @@ def recursive_feature_elimination(X_train, y_train):
 
 # Hyperparameter tuning with Grid Search
 def tune_random_forest_with_grid_search(X_train, y_train):
+    """
+    Tunes hyperparameters for a Random Forest model using GridSearchCV.
+
+    Parameters:
+    - X_train: array-like, training feature set.
+    - y_train: array-like, training label set.
+
+    Returns:
+    - best_estimator_: the Random Forest model with the best hyperparameters.
+    """
     rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
 
     param_grid = {
@@ -100,6 +175,17 @@ def tune_random_forest_with_grid_search(X_train, y_train):
 
 # Hyperparameter tuning with Randomized Search
 def tune_random_forest_with_random_search(X_train, y_train, n_iter=50):
+    """
+    Tunes hyperparameters for a Random Forest model using RandomizedSearchCV.
+
+    Parameters:
+    - X_train: array-like, training feature set.
+    - y_train: array-like, training label set.
+    - n_iter: int, number of parameter settings sampled (default=50).
+
+    Returns:
+    - best_estimator_: the Random Forest model with the best hyperparameters.
+    """
     rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
 
     param_dist = {
@@ -121,6 +207,16 @@ def tune_random_forest_with_random_search(X_train, y_train, n_iter=50):
 
 # Hyperparameter tuning with Bayesian Optimization (using skopt)
 def tune_random_forest_with_bayesian_optimization(X_train, y_train):
+    """
+    Tunes hyperparameters for a Random Forest model using Bayesian Optimization (BayesSearchCV).
+
+    Parameters:
+    - X_train: array-like, training feature set.
+    - y_train: array-like, training label set.
+
+    Returns:
+    - best_estimator_: the Random Forest model with the best hyperparameters found using Bayesian Optimization.
+    """
     rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
     param_dist = {
         'n_estimators': (50, 500),
@@ -139,16 +235,26 @@ def tune_random_forest_with_bayesian_optimization(X_train, y_train):
 
 # Hyperparameter tuning with Hyperband (using HalvingGridSearchCV and HalvingRandomSearchCV)
 def tune_random_forest_with_hyperband(X_train, y_train, search_type="grid"):
+    """
+    Tunes hyperparameters for a Random Forest model using Hyperband via HalvingGridSearchCV or HalvingRandomSearchCV.
+
+    Parameters:
+    - X_train: array-like, training feature set.
+    - y_train: array-like, training label set.
+    - search_type: str, either "grid" for HalvingGridSearchCV or "random" for HalvingRandomSearchCV.
+
+    Returns:
+    - best_estimator_: the Random Forest model with the best hyperparameters found using Hyperband.
+    """
     rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
 
-    # Updated parameter grid to reduce overfitting
     param_grid = {
-        'n_estimators': [100, 200, 300],  # Reduce the number of trees
-        'max_depth': [10, 15, 20],  # Reduce tree depth to prevent overfitting
-        'min_samples_split': [10, 15, 20],  # Force more samples per split
-        'min_samples_leaf': [2, 4, 6],  # Force more samples per leaf
+        'n_estimators': [100, 200, 300],
+        'max_depth': [10, 15, 20],
+        'min_samples_split': [10, 15, 20],
+        'min_samples_leaf': [2, 4, 6],
         'bootstrap': [True],
-        'criterion': ['gini', 'entropy'],  # Continue to compare 'gini' and 'entropy'
+        'criterion': ['gini', 'entropy'],
         'max_features': ['auto', 'sqrt', 'log2']
     }
 
@@ -166,6 +272,19 @@ def tune_random_forest_with_hyperband(X_train, y_train, search_type="grid"):
 
 # Check for overfitting or underfitting
 def check_overfitting_underfitting(rf_model, X_train, X_test, y_train, y_test):
+    """
+    Checks for overfitting or underfitting by comparing training and testing accuracy for the Random Forest model.
+
+    Parameters:
+    - rf_model: sklearn estimator, the trained Random Forest model.
+    - X_train: array-like, training feature set.
+    - X_test: array-like, test feature set.
+    - y_train: array-like, training label set.
+    - y_test: array-like, test label set.
+
+    Returns:
+    - None, but prints whether the model is overfitting, underfitting, or well-fitted.
+    """
     train_accuracy = rf_model.score(X_train, y_train)
     test_accuracy = rf_model.score(X_test, y_test)
     print(f"Training Accuracy: {train_accuracy:.4f}")
@@ -180,17 +299,27 @@ def check_overfitting_underfitting(rf_model, X_train, X_test, y_train, y_test):
 
 # Train and evaluate Random Forest with different hyperparameter tuning methods
 def train_and_evaluate_rf(filepath, search_method="grid", n_iter=50, search_type="grid"):
-    # Load data
+    """
+    Trains and evaluates a Random Forest model with different hyperparameter tuning methods (Grid Search, Randomized Search,
+    Bayesian Optimization, or Hyperband).
+
+    Parameters:
+    - filepath: str, path to the preprocessed data file (.npy format).
+    - search_method: str, method for hyperparameter tuning, one of ["grid", "random", "bayesian", "hyperband"].
+    - n_iter: int, number of iterations for Randomized Search or Bayesian Optimization (default=50).
+    - search_type: str, either "grid" or "random" for Hyperband (default="grid").
+
+    Returns:
+    - None, but prints evaluation metrics and tuning results, and plots the learning curve.
+    """
     features_df = load_preprocessed_data(filepath)
     X = features_df.drop(columns=['label'])
     y = features_df['label']
 
-    # Encode labels and split data
     label_encoder = LabelEncoder()
     y = label_encoder.fit_transform(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-    # Apply SMOTE for handling class imbalance
     X_train_smote, y_train_smote = apply_smote(X_train, y_train)
 
     # Tune hyperparameters using different methods
