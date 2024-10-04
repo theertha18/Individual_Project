@@ -80,27 +80,27 @@ def plot_feature_importance(model, X, feature_names):
     plt.show()
 
 
-def plot_logistic_regression_coefficients(model, X, feature_names):
-    """
-    Plots the absolute value of coefficients for a Logistic Regression model.
-
-    Parameters:
-    - model: trained LogisticRegression model.
-    - X: array-like, feature matrix used for training the model.
-    - feature_names: list, names of the features.
-
-    Returns:
-    - None, but displays a bar plot of the logistic regression coefficients.
-    """
-    coefficients = np.abs(model.coef_[0])
-    sorted_indices = np.argsort(coefficients)[::-1]
-
-    plt.figure(figsize=(10, 6))
-    plt.title("Feature Coefficients - Logistic Regression")
-    plt.bar(range(X.shape[1]), coefficients[sorted_indices], align='center')
-    plt.xticks(range(X.shape[1]), feature_names[sorted_indices], rotation=90)
-    plt.tight_layout()
-    plt.show()
+# def plot_logistic_regression_coefficients(model, X, feature_names):
+#     """
+#     Plots the absolute value of coefficients for a Logistic Regression model.
+#
+#     Parameters:
+#     - model: trained LogisticRegression model.
+#     - X: array-like, feature matrix used for training the model.
+#     - feature_names: list, names of the features.
+#
+#     Returns:
+#     - None, but displays a bar plot of the logistic regression coefficients.
+#     """
+#     coefficients = np.abs(model.coef_[0])
+#     sorted_indices = np.argsort(coefficients)[::-1]
+#
+#     plt.figure(figsize=(10, 6))
+#     plt.title("Feature Coefficients - Logistic Regression")
+#     plt.bar(range(X.shape[1]), coefficients[sorted_indices], align='center')
+#     plt.xticks(range(X.shape[1]), feature_names[sorted_indices], rotation=90)
+#     plt.tight_layout()
+#     plt.show()
 
 
 def train_svm(X_train, X_test, y_train, y_test):
@@ -245,7 +245,7 @@ def train_and_evaluate_models(filepath, save_models=True, save_dir='/kaggle/work
     np.random.seed(42)
 
     models = {
-        'Logistic Regression': LogisticRegression(max_iter=2000),
+        # 'Logistic Regression': LogisticRegression(max_iter=2000),
         'KNN Classifier': KNeighborsClassifier(),
         'Random Forest Classifier': RandomForestClassifier(),
     }
@@ -261,8 +261,8 @@ def train_and_evaluate_models(filepath, save_models=True, save_dir='/kaggle/work
         if name == 'Random Forest Classifier':
             plot_feature_importance(model, X_train, X.columns)
 
-        if name == 'Logistic Regression':
-            plot_logistic_regression_coefficients(model, X_train, X.columns)
+        # if name == 'Logistic Regression':
+        #     plot_logistic_regression_coefficients(model, X_train, X.columns)
 
         if save_models:
             model_filename = f"{save_dir}{name.replace(' ', '_').lower()}_model.pkl"
